@@ -49,4 +49,5 @@ Gestiona contratos o bolsas de horas por cliente:
     "installable": True,
     "application": True,
     "auto_install": False,
+    "post_init_hook": "_post_init_hook",
 }
