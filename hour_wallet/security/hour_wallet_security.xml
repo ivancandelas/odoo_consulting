@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <record id="module_category_hour_wallet" model="ir.module.category">
+            <field name="name">Bolsas de Horas</field>
+            <field name="description">Gestión de bolsas de horas vendidas a clientes.</field>
+            <field name="sequence">55</field>
+        </record>
+
+        <record id="group_hour_wallet_user" model="res.groups">
+            <field name="name">Usuario</field>
+            <field name="category_id" ref="module_category_hour_wallet"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">Consultores que registran horas y consultan bolsas.</field>
+        </record>
+
+        <record id="group_hour_wallet_manager" model="res.groups">
+            <field name="name">Administrador</field>
+            <field name="category_id" ref="module_category_hour_wallet"/>
+            <field name="implied_ids" eval="[(4, ref('group_hour_wallet_user'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+            <field name="comment">Gestión completa de bolsas: creación, edición, cierre.</field>
+        </record>
+
+        <!-- Reglas multi-compañía -->
+        <record id="hour_wallet_company_rule" model="ir.rule">
+            <field name="name">Bolsa de horas: multi-compañía</field>
+            <field name="model_id" ref="model_hour_wallet"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+    </data>
+</odoo>

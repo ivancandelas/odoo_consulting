@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_hour_wallet_root"
+              name="Bolsas de Horas"
+              web_icon="hour_wallet,static/description/icon.png"
+              sequence="90"
+              groups="hour_wallet.group_hour_wallet_user"/>
+
+    <menuitem id="menu_hour_wallet_operations"
+              name="Operación"
+              parent="menu_hour_wallet_root"
+              sequence="10"/>
+
+    <menuitem id="menu_hour_wallet_list"
+              name="Bolsas"
+              parent="menu_hour_wallet_operations"
+              action="action_hour_wallet"
+              sequence="10"/>
+
+    <menuitem id="menu_hour_wallet_expiring"
+              name="Por vencer"
+              parent="menu_hour_wallet_operations"
+              action="action_hour_wallet_expiring"
+              sequence="20"/>
+
+    <menuitem id="menu_hour_wallet_low_balance"
+              name="Saldo bajo"
+              parent="menu_hour_wallet_operations"
+              action="action_hour_wallet_low_balance"
+              sequence="30"/>
+
+    <menuitem id="menu_hour_wallet_reporting"
+              name="Reportes"
+              parent="menu_hour_wallet_root"
+              sequence="20"/>
+
+    <menuitem id="menu_hour_wallet_report_wizard"
+              name="Reporte de consumo"
+              parent="menu_hour_wallet_reporting"
+              action="action_hour_wallet_report_wizard"
+              sequence="10"/>
+
+    <menuitem id="menu_hour_wallet_configuration"
+              name="Configuración"
+              parent="menu_hour_wallet_root"
+              sequence="90"
+              groups="hour_wallet.group_hour_wallet_manager"/>
+
+    <menuitem id="menu_hour_wallet_types"
+              name="Tipos de bolsa"
+              parent="menu_hour_wallet_configuration"
+              action="action_hour_wallet_type"
+              sequence="10"/>
+
+</odoo>

@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_hour_wallet_user,hour.wallet.user,model_hour_wallet,group_hour_wallet_user,1,1,0,0
+access_hour_wallet_manager,hour.wallet.manager,model_hour_wallet,group_hour_wallet_manager,1,1,1,1
+access_hour_wallet_type_user,hour.wallet.type.user,model_hour_wallet_type,group_hour_wallet_user,1,0,0,0
+access_hour_wallet_type_manager,hour.wallet.type.manager,model_hour_wallet_type,group_hour_wallet_manager,1,1,1,1
+access_hour_wallet_report_wizard,hour.wallet.report.wizard,model_hour_wallet_report_wizard,group_hour_wallet_user,1,1,1,1

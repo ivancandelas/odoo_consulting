@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="module_category_meeting_minutes" model="ir.module.category">
+            <field name="name">Actas de Reunión</field>
+            <field name="description">Gestión de actas de reunión con cliente.</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <record id="group_meeting_minutes_user" model="res.groups">
+            <field name="name">Usuario</field>
+            <field name="category_id" ref="module_category_meeting_minutes"/>
+            <field name="comment">Crea y gestiona sus propias actas de reunión.</field>
+        </record>
+
+        <record id="group_meeting_minutes_manager" model="res.groups">
+            <field name="name">Administrador</field>
+            <field name="category_id" ref="module_category_meeting_minutes"/>
+            <field name="implied_ids" eval="[(4, ref('group_meeting_minutes_user'))]"/>
+            <field name="users" eval="[(4, ref('base.user_admin'))]"/>
+            <field name="comment">Control total de actas, asistentes y compromisos. Multi-compañía.</field>
+        </record>
+
+        <record id="meeting_minute_company_rule" model="ir.rule">
+            <field name="name">Acta multi-compañía</field>
+            <field name="model_id" ref="model_meeting_minute"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+            <field name="global" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

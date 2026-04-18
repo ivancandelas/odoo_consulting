@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_meeting_minute_form_inherit_report_mail" model="ir.ui.view">
+        <field name="name">meeting.minute.form.inherit.report_mail</field>
+        <field name="model">meeting.minute</field>
+        <field name="inherit_id" ref="meeting_minutes_base.view_meeting_minute_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//header/button[@name='action_finish']" position="after">
+                <button name="action_send_by_email" string="Enviar por correo"
+                        type="object"
+                        invisible="state in ('draft','cancelled')"
+                        class="oe_highlight"
+                        groups="meeting_minutes_base.group_meeting_minutes_user"/>
+                <button name="action_send_by_email" string="Reenviar por correo"
+                        type="object"
+                        invisible="state in ('draft','cancelled') or not sent_by_email"
+                        groups="meeting_minutes_base.group_meeting_minutes_user"/>
+            </xpath>
+
+            <xpath expr="//page[@name='related_meetings']//group[1]" position="inside">
+                <field name="sent_by_email" readonly="1"/>
+                <field name="last_sent_date" readonly="1" invisible="not sent_by_email"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="view_meeting_minute_list_inherit_report_mail" model="ir.ui.view">
+        <field name="name">meeting.minute.list.inherit.report_mail</field>
+        <field name="model">meeting.minute</field>
+        <field name="inherit_id" ref="meeting_minutes_base.view_meeting_minute_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="before">
+                <field name="sent_by_email" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_meeting_minute_search_inherit_report_mail" model="ir.ui.view">
+        <field name="name">meeting.minute.search.inherit.report_mail</field>
+        <field name="model">meeting.minute</field>
+        <field name="inherit_id" ref="meeting_minutes_base.view_meeting_minute_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='done']" position="after">
+                <separator/>
+                <filter string="Enviadas al cliente" name="sent_by_email"
+                        domain="[('sent_by_email','=',True)]"/>
+                <filter string="Sin enviar" name="not_sent_by_email"
+                        domain="[('sent_by_email','=',False)]"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

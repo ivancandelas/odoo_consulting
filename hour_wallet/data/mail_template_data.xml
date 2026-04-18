@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <record id="mail_template_hour_wallet_report" model="mail.template">
+            <field name="name">Bolsa de Horas: Reporte de consumo</field>
+            <field name="model_id" ref="model_hour_wallet_report_wizard"/>
+            <field name="subject">Reporte de consumo - {{ object.partner_id.display_name or '' }}</field>
+            <field name="email_from">{{ user.email_formatted }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="report_template_ids" eval="[(4, ref('hour_wallet.action_report_hour_wallet_consumption'))]"/>
+            <field name="body_html" type="html">
+<div style="font-family: Verdana, sans-serif;">
+    <p>Estimado/a <t t-out="object.partner_id.name or ''"/>,</p>
+    <p>Adjuntamos el reporte de consumo de sus bolsas de horas para el período
+        <strong><t t-out="object.date_from"/></strong> a
+        <strong><t t-out="object.date_to"/></strong>.</p>
+    <ul>
+        <t t-foreach="object.wallet_ids" t-as="w">
+            <li>
+                <strong t-out="w.display_name or ''"/>:
+                <t t-out="'%.2f' % w.hours_available"/> h disponibles
+                de <t t-out="'%.2f' % w.hours_purchased"/> h contratadas.
+            </li>
+        </t>
+    </ul>
+    <p>Quedamos atentos a cualquier consulta.</p>
+    <p>Saludos cordiales.</p>
+</div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="demo_meeting_minute_1" model="meeting.minute">
+            <field name="title">Kick-off proyecto Nexus</field>
+            <field name="location">Oficinas del cliente</field>
+            <field name="scheduled_date" eval="(DateTime.now()).strftime('%Y-%m-%d 10:00:00')"/>
+            <field name="duration">1.5</field>
+            <field name="objective">Presentar el alcance del proyecto y acordar plan de trabajo.</field>
+            <field name="partner_id" ref="base.res_partner_2"/>
+            <field name="agenda"><![CDATA[<ul><li>Presentación del equipo</li><li>Revisión de alcance</li><li>Acuerdos</li></ul>]]></field>
+        </record>
+
+        <record id="demo_attendee_1" model="meeting.minute.attendee">
+            <field name="meeting_id" ref="demo_meeting_minute_1"/>
+            <field name="partner_id" ref="base.res_partner_2"/>
+            <field name="attendance_type">onsite</field>
+        </record>
+        <record id="demo_attendee_2" model="meeting.minute.attendee">
+            <field name="meeting_id" ref="demo_meeting_minute_1"/>
+            <field name="partner_id" ref="base.res_partner_12"/>
+            <field name="attendance_type">remote</field>
+        </record>
+
+        <record id="demo_commitment_1" model="meeting.minute.commitment">
+            <field name="meeting_id" ref="demo_meeting_minute_1"/>
+            <field name="description">Enviar documento de alcance consolidado.</field>
+            <field name="due_date" eval="(DateTime.now()).strftime('%Y-%m-%d')"/>
+        </record>
+
+    </data>
+</odoo>

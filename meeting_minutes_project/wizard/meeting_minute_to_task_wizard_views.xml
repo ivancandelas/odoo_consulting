@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_meeting_minute_to_task_wizard_form" model="ir.ui.view">
+        <field name="name">meeting.minute.to.task.wizard.form</field>
+        <field name="model">meeting.minute.to.task.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Convertir compromisos en tareas">
+                <sheet>
+                    <group>
+                        <field name="meeting_id" readonly="1"/>
+                        <field name="project_id"
+                               options="{'no_create': True}"/>
+                    </group>
+                    <separator string="Compromisos a convertir"/>
+                    <field name="commitment_ids">
+                        <list>
+                            <field name="description"/>
+                            <field name="responsible_partner_id"/>
+                            <field name="responsible_user_id"/>
+                            <field name="due_date"/>
+                            <field name="state"/>
+                        </list>
+                    </field>
+                </sheet>
+                <footer>
+                    <button name="action_create_tasks" string="Crear tareas"
+                            type="object" class="oe_highlight"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

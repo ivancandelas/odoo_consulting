@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_meeting_minute_commitment_form_inherit_project" model="ir.ui.view">
+        <field name="name">meeting.minute.commitment.form.inherit.project</field>
+        <field name="model">meeting.minute.commitment</field>
+        <field name="inherit_id" ref="meeting_minutes_base.view_meeting_minute_commitment_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_mark_done']" position="before">
+                <button name="action_open_task" string="Ver tarea" type="object"
+                        invisible="not task_id"/>
+            </xpath>
+            <xpath expr="//field[@name='due_date']" position="after">
+                <field name="project_id"/>
+                <field name="task_id" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_meeting_minute_commitment_list_inherit_project" model="ir.ui.view">
+        <field name="name">meeting.minute.commitment.list.inherit.project</field>
+        <field name="model">meeting.minute.commitment</field>
+        <field name="inherit_id" ref="meeting_minutes_base.view_meeting_minute_commitment_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='due_date']" position="after">
+                <field name="project_id" optional="show"/>
+                <field name="task_id" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

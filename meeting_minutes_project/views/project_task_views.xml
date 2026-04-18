@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_project_task_form_inherit_meeting" model="ir.ui.view">
+        <field name="name">project.task.form.inherit.meeting</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//div[hasclass('oe_title')]" position="inside">
+                <div class="text-muted small mt-1"
+                     invisible="not meeting_minute_id and not meeting_minute_commitment_id">
+                    <i class="fa fa-file-text-o me-1" title="Acta de origen"/>
+                    <span>Generada desde acta: </span>
+                    <field name="meeting_minute_id" readonly="1" nolabel="1"
+                           class="oe_inline"/>
+                    <span invisible="not meeting_minute_commitment_id">
+                        · compromiso
+                        <field name="meeting_minute_commitment_id" readonly="1"
+                               nolabel="1" class="oe_inline"/>
+                    </span>
+                </div>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_meeting_minute_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Acta de Reunión</h2>
+                        <h3 t-field="doc.title"/>
+                        <div class="row mt-3">
+                            <div class="col-6">
+                                <strong>Folio:</strong>
+                                <span t-field="doc.name"/>
+                                <br/>
+                                <strong>Cliente:</strong>
+                                <span t-field="doc.partner_id"/>
+                                <br/>
+                                <t t-if="'project_id' in doc._fields and doc.project_id">
+                                    <strong>Proyecto:</strong>
+                                    <span t-field="doc.project_id"/>
+                                    <br/>
+                                </t>
+                                <strong>Responsable:</strong>
+                                <span t-field="doc.user_id"/>
+                            </div>
+                            <div class="col-6">
+                                <strong>Fecha programada:</strong>
+                                <span t-field="doc.scheduled_date"/>
+                                <br/>
+                                <strong>Lugar:</strong>
+                                <span t-field="doc.location"/>
+                                <br/>
+                                <strong>Estado:</strong>
+                                <span t-field="doc.state"/>
+                                <br/>
+                                <t t-if="doc.start_real">
+                                    <strong>Inicio real:</strong>
+                                    <span t-field="doc.start_real"/>
+                                    <br/>
+                                </t>
+                                <t t-if="doc.end_real">
+                                    <strong>Fin real:</strong>
+                                    <span t-field="doc.end_real"/>
+                                </t>
+                            </div>
+                        </div>
+
+                        <t t-if="doc.objective">
+                            <h4 class="mt-4">Objetivo</h4>
+                            <p t-field="doc.objective"/>
+                        </t>
+
+                        <t t-if="doc.agenda">
+                            <h4 class="mt-3">Agenda</h4>
+                            <div t-field="doc.agenda"/>
+                        </t>
+
+                        <t t-if="doc.attendee_ids">
+                            <h4 class="mt-3">Asistentes</h4>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Empresa</th>
+                                        <th>Tipo</th>
+                                        <th>Representado por</th>
+                                        <th class="text-center">Asistió</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="doc.attendee_ids" t-as="att">
+                                        <td><span t-field="att.partner_id"/></td>
+                                        <td><span t-field="att.partner_company_id"/></td>
+                                        <td>
+                                            <t t-if="att.attendance_type == 'onsite'">Presencial</t>
+                                            <t t-elif="att.attendance_type == 'remote'">Remoto</t>
+                                            <t t-elif="att.attendance_type == 'delegate'">Mandó a alguien</t>
+                                        </td>
+                                        <td><span t-field="att.delegate_partner_id"/></td>
+                                        <td class="text-center">
+                                            <t t-if="att.attended">Sí</t>
+                                            <t t-else="">No</t>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+
+                        <t t-if="'development_notes' in doc._fields and doc.development_notes">
+                            <h4 class="mt-3">Desarrollo de la reunión</h4>
+                            <div t-field="doc.development_notes"/>
+                        </t>
+
+                        <t t-if="doc.conclusions">
+                            <h4 class="mt-3">Conclusiones</h4>
+                            <div t-field="doc.conclusions"/>
+                        </t>
+
+                        <t t-if="doc.commitment_ids">
+                            <h4 class="mt-3">Compromisos</h4>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Descripción</th>
+                                        <th>Responsable</th>
+                                        <th>Fecha</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="doc.commitment_ids" t-as="c">
+                                        <td><span t-field="c.description"/></td>
+                                        <td><span t-field="c.responsible_partner_id"/></td>
+                                        <td><span t-field="c.due_date"/></td>
+                                        <td><span t-field="c.state"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+
+                        <t t-if="'child_meeting_ids' in doc._fields and doc.child_meeting_ids">
+                            <h4 class="mt-3">Reuniones de seguimiento</h4>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Folio</th>
+                                        <th>Título</th>
+                                        <th>Tipo</th>
+                                        <th>Fecha programada</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="doc.child_meeting_ids" t-as="child">
+                                        <td><span t-field="child.name"/></td>
+                                        <td><span t-field="child.title"/></td>
+                                        <td><span t-field="child.follow_up_type"/></td>
+                                        <td><span t-field="child.scheduled_date"/></td>
+                                        <td><span t-field="child.state"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+
+                        <t t-if="'parent_meeting_id' in doc._fields and doc.parent_meeting_id">
+                            <p class="mt-2">
+                                <em>Esta acta es seguimiento de
+                                    <span t-field="doc.parent_meeting_id"/>.
+                                </em>
+                            </p>
+                        </t>
+
+                        <t t-if="not doc.child_meeting_ids and doc.next_meeting_date">
+                            <h4 class="mt-3">Próxima reunión (legado)</h4>
+                            <p>
+                                <strong>Fecha:</strong>
+                                <span t-field="doc.next_meeting_date"/>
+                                <br/>
+                                <strong>Lugar:</strong>
+                                <span t-field="doc.next_meeting_location"/>
+                                <br/>
+                                <t t-if="doc.next_meeting_objective">
+                                    <strong>Objetivo:</strong>
+                                    <span t-field="doc.next_meeting_objective"/>
+                                </t>
+                            </p>
+                        </t>
+
+                        <div class="row mt-5">
+                            <div class="col-6 text-center">
+                                <p>____________________________</p>
+                                <p><strong>Responsable</strong></p>
+                                <p><span t-field="doc.user_id"/></p>
+                            </div>
+                            <div class="col-6 text-center">
+                                <p>____________________________</p>
+                                <p><strong>Cliente</strong></p>
+                                <p><span t-field="doc.partner_id"/></p>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

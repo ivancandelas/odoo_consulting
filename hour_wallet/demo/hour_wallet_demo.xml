@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="demo_hour_wallet_1" model="hour.wallet">
+            <field name="partner_id" ref="base.res_partner_2"/>
+            <field name="type_id" ref="hour_wallet_type_consulting"/>
+            <field name="description">Bolsa de consultoría Q1</field>
+            <field name="hours_purchased">40</field>
+            <field name="unit_price">80</field>
+            <field name="date_start" eval="(DateTime.now()).strftime('%Y-%m-%d')"/>
+            <field name="date_end" eval="(DateTime.now() + relativedelta(months=3)).strftime('%Y-%m-%d')"/>
+            <field name="state">active</field>
+        </record>
+
+    </data>
+</odoo>

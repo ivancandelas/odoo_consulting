@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_meeting_minute_form_inherit_project" model="ir.ui.view">
+        <field name="name">meeting.minute.form.inherit.project</field>
+        <field name="model">meeting.minute</field>
+        <field name="inherit_id" ref="meeting_minutes_base.view_meeting_minute_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//header/button[@name='action_open_follow_up_wizard']" position="after">
+                <button name="action_open_task_wizard" string="Crear tareas desde compromisos"
+                        type="object"
+                        invisible="state == 'cancelled' or not project_id"/>
+            </xpath>
+
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_tasks" type="object"
+                        class="oe_stat_button" icon="fa-tasks"
+                        invisible="task_count == 0">
+                    <field name="task_count" widget="statinfo" string="Tareas"/>
+                </button>
+            </xpath>
+
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="project_id"/>
+            </xpath>
+
+            <xpath expr="//field[@name='commitment_ids']/list" position="inside">
+                <field name="project_id" optional="show"/>
+                <field name="task_id" optional="show" readonly="1"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="view_meeting_minute_list_inherit_project" model="ir.ui.view">
+        <field name="name">meeting.minute.list.inherit.project</field>
+        <field name="model">meeting.minute</field>
+        <field name="inherit_id" ref="meeting_minutes_base.view_meeting_minute_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="project_id" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_meeting_minute_search_inherit_project" model="ir.ui.view">
+        <field name="name">meeting.minute.search.inherit.project</field>
+        <field name="model">meeting.minute</field>
+        <field name="inherit_id" ref="meeting_minutes_base.view_meeting_minute_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="project_id"/>
+            </xpath>
+            <xpath expr="//filter[@name='group_partner']" position="after">
+                <filter string="Proyecto" name="group_project" context="{'group_by':'project_id'}"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

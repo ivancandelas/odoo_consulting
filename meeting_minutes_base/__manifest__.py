@@ -1,0 +1,25 @@
+{
+    "name": "Actas de Reunión - Base",
+    "summary": "Gestión de actas de reunión con cliente: asistentes, compromisos, estados, seguimientos.",
+    "version": "18.0.1.2.0",
+    "license": "LGPL-3",
+    "author": "Ivan Candelas",
+    "website": "https://nxscore.mx",
+    "category": "Productivity/Meetings",
+    "depends": ["base", "mail"],
+    "data": [
+        "security/meeting_minutes_security.xml",
+        "security/ir.model.access.csv",
+        "data/ir_sequence_data.xml",
+        "wizard/meeting_minute_follow_up_wizard_views.xml",
+        "views/meeting_minute_views.xml",
+        "views/meeting_minute_attendee_views.xml",
+        "views/meeting_minute_commitment_views.xml",
+        "views/meeting_minutes_menus.xml",
+    ],
+    "demo": [
+        "demo/meeting_minute_demo.xml",
+    ],
+    "application": True,
+    "installable": True,
+}

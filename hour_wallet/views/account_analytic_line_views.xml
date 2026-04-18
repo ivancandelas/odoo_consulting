@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Inherit hr_timesheet form/list to show wallet & available balance -->
+    <record id="hr_timesheet_line_list_wallet" model="ir.ui.view">
+        <field name="name">hr.timesheet.line.list.wallet</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="hr_timesheet.hr_timesheet_line_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='task_id']" position="attributes">
+                <attribute name="options">{'no_quick_create': True}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='task_id']" position="after">
+                <field name="hour_wallet_id"
+                       optional="show"
+                       options="{'no_create': True}"/>
+                <field name="wallet_available_hours"
+                       optional="hide"
+                       widget="float_time"
+                       string="Saldo bolsa"/>
+                <field name="wallet_partner_id" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="hr_timesheet_line_form_wallet" model="ir.ui.view">
+        <field name="name">hr.timesheet.line.form.wallet</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="hr_timesheet.timesheet_view_form_user"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='task_id']" position="attributes">
+                <attribute name="options">{'no_quick_create': True}</attribute>
+            </xpath>
+            <xpath expr="//field[@name='task_id']" position="after">
+                <field name="hour_wallet_id"
+                       options="{'no_create': True}"/>
+                <field name="wallet_available_hours"
+                       widget="float_time"
+                       string="Saldo disponible en bolsa"
+                       invisible="not hour_wallet_id"/>
+                <field name="wallet_partner_id" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

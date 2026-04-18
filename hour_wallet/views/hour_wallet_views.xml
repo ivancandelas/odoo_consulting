@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ====================================================== -->
+    <!-- SEARCH                                                  -->
+    <!-- ====================================================== -->
+    <record id="view_hour_wallet_search" model="ir.ui.view">
+        <field name="name">hour.wallet.search</field>
+        <field name="model">hour.wallet</field>
+        <field name="arch" type="xml">
+            <search string="Bolsas de horas">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="project_id"/>
+                <field name="type_id"/>
+                <field name="user_id"/>
+                <filter string="Activas" name="filter_active"
+                        domain="[('state','=','active')]"/>
+                <filter string="Borrador" name="filter_draft"
+                        domain="[('state','=','draft')]"/>
+                <filter string="Por vencer (≤ 15 días)" name="filter_expiring"
+                        domain="[('state','=','active'),('date_end','!=',False),('date_end','&gt;=',context_today().strftime('%Y-%m-%d')),('date_end','&lt;=',(context_today() + relativedelta(days=15)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Saldo bajo" name="filter_low_balance"
+                        domain="[('low_balance','=',True)]"/>
+                <filter string="Agotadas" name="filter_exhausted"
+                        domain="[('state','=','exhausted')]"/>
+                <filter string="Vencidas" name="filter_expired"
+                        domain="[('state','=','expired')]"/>
+                <filter string="Cerradas" name="filter_closed"
+                        domain="[('state','=','closed')]"/>
+                <separator/>
+                <filter string="Mías" name="filter_mine"
+                        domain="[('user_id','=',uid)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Cliente" name="group_partner"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter string="Proyecto" name="group_project"
+                            context="{'group_by': 'project_id'}"/>
+                    <filter string="Tipo" name="group_type"
+                            context="{'group_by': 'type_id'}"/>
+                    <filter string="Estado" name="group_state"
+                            context="{'group_by': 'state'}"/>
+                    <filter string="Responsable" name="group_user"
+                            context="{'group_by': 'user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ====================================================== -->
+    <!-- LIST                                                    -->
+    <!-- ====================================================== -->
+    <record id="view_hour_wallet_list" model="ir.ui.view">
+        <field name="name">hour.wallet.list</field>
+        <field name="model">hour.wallet</field>
+        <field name="arch" type="xml">
+            <list string="Bolsas de horas" decoration-info="state=='draft'"
+                  decoration-success="state=='active'"
+                  decoration-warning="low_balance"
+                  decoration-danger="state in ('expired','exhausted')"
+                  decoration-muted="state=='closed'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="project_id" optional="show"/>
+                <field name="type_id" optional="show"/>
+                <field name="hours_purchased" sum="Total contratadas"/>
+                <field name="hours_consumed" sum="Total consumidas"/>
+                <field name="hours_available" sum="Total disponibles"/>
+                <field name="consumption_percent" widget="progressbar"
+                       options="{'current_value': 'consumption_percent', 'max_value': 100}"/>
+                <field name="date_start" optional="hide"/>
+                <field name="date_end"/>
+                <field name="days_to_expire" optional="hide"/>
+                <field name="user_id" optional="show" widget="many2one_avatar_user"/>
+                <field name="state" widget="badge"
+                       decoration-info="state=='draft'"
+                       decoration-success="state=='active'"
+                       decoration-warning="state=='exhausted'"
+                       decoration-danger="state=='expired'"
+                       decoration-muted="state=='closed'"/>
+                <field name="low_balance" invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ====================================================== -->
+    <!-- KANBAN                                                  -->
+    <!-- ====================================================== -->
+    <record id="view_hour_wallet_kanban" model="ir.ui.view">
+        <field name="name">hour.wallet.kanban</field>
+        <field name="model">hour.wallet</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" sample="1" highlight_color="color">
+                <field name="project_id"/>
+                <field name="date_end"/>
+                <field name="consumption_percent"/>
+                <field name="low_balance"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong><field name="name"/></strong>
+                                <div class="text-muted">
+                                    <field name="partner_id"/>
+                                </div>
+                            </div>
+                            <field name="state" widget="label_selection"
+                                   options="{'classes': {'draft': 'default', 'active': 'success', 'exhausted': 'warning', 'expired': 'danger', 'closed': 'muted'}}"/>
+                        </div>
+                        <div class="mt-2" t-if="record.project_id and record.project_id.raw_value">
+                            <i class="fa fa-folder-open-o me-1" title="Proyecto" role="img" aria-label="Proyecto"/>
+                            <field name="project_id"/>
+                        </div>
+                        <div class="mt-1">
+                            <i class="fa fa-clock-o me-1" title="Horas" role="img" aria-label="Horas"/>
+                            <field name="hours_consumed"/> / <field name="hours_purchased"/> h
+                        </div>
+                        <div class="mt-1" t-if="record.date_end and record.date_end.raw_value">
+                            <i class="fa fa-calendar me-1" title="Vencimiento" role="img" aria-label="Vencimiento"/>
+                            Vence: <field name="date_end"/>
+                        </div>
+                        <progress t-att-value="record.consumption_percent and record.consumption_percent.raw_value or 0"
+                                  max="100"
+                                  class="w-100 mt-2"
+                                  style="height:6px;"/>
+                        <div class="d-flex justify-content-end mt-2">
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ====================================================== -->
+    <!-- FORM                                                    -->
+    <!-- ====================================================== -->
+    <record id="view_hour_wallet_form" model="ir.ui.view">
+        <field name="name">hour.wallet.form</field>
+        <field name="model">hour.wallet</field>
+        <field name="arch" type="xml">
+            <form string="Bolsa de horas">
+                <header>
+                    <button name="action_confirm" type="object"
+                            string="Activar" class="oe_highlight"
+                            invisible="state != 'draft'"/>
+                    <button name="action_close" type="object"
+                            string="Cerrar"
+                            invisible="state in ('draft','closed')"
+                            confirm="¿Cerrar la bolsa? No admitirá más consumos."/>
+                    <button name="action_reopen" type="object"
+                            string="Reabrir"
+                            invisible="state not in ('closed','exhausted','expired')"
+                            groups="hour_wallet.group_hour_wallet_manager"/>
+                    <button name="action_reset_to_draft" type="object"
+                            string="Volver a borrador"
+                            invisible="state == 'draft'"
+                            groups="hour_wallet.group_hour_wallet_manager"/>
+                    <button name="action_open_report_wizard" type="object"
+                            string="Generar reporte" class="btn-secondary"
+                            invisible="state == 'draft'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,active,exhausted,expired,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_timesheets" type="object"
+                                class="oe_stat_button" icon="fa-clock-o">
+                            <field name="timesheet_count" widget="statinfo" string="Consumos"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Agotada"
+                            bg_color="bg-warning"
+                            invisible="state != 'exhausted'"/>
+                    <widget name="web_ribbon" title="Vencida"
+                            bg_color="bg-danger"
+                            invisible="state != 'expired'"/>
+                    <widget name="web_ribbon" title="Cerrada"
+                            bg_color="bg-secondary"
+                            invisible="state != 'closed'"/>
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1><field name="name" readonly="1"/></h1>
+                        <h3>
+                            <field name="description"
+                                   placeholder="Descripción comercial (opcional)"/>
+                        </h3>
+                    </div>
+                    <group>
+                        <group string="Cliente y servicio">
+                            <field name="partner_id"
+                                   readonly="state != 'draft'"
+                                   options="{'no_create': True}"/>
+                            <field name="project_id"
+                                   options="{'no_create': True}"/>
+                            <field name="type_id"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                        </group>
+                        <group string="Horas y vigencia">
+                            <field name="hours_purchased"
+                                   readonly="state not in ('draft',)"/>
+                            <field name="hours_consumed"/>
+                            <field name="hours_available"/>
+                            <field name="consumption_percent" widget="progressbar"/>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="days_to_expire"
+                                   invisible="not date_end"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Comercial (referencia)">
+                            <field name="currency_id"
+                                   groups="base.group_multi_currency"/>
+                            <field name="unit_price"/>
+                            <field name="amount_total"/>
+                        </group>
+                        <group string="Reglas y alertas">
+                            <field name="allow_overdraft"/>
+                            <field name="alerts_enabled"/>
+                            <field name="alert_threshold_percent"
+                                   invisible="not alerts_enabled"/>
+                            <field name="alert_days_before_expiration"
+                                   invisible="not alerts_enabled"/>
+                            <field name="low_balance" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Consumos" name="timesheets">
+                            <field name="timesheet_ids"
+                                   context="{
+                                       'default_hour_wallet_id': id,
+                                       'default_partner_id': partner_id,
+                                       'default_project_id': project_id,
+                                   }">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                    <field name="employee_id"/>
+                                    <field name="project_id"/>
+                                    <field name="task_id"
+                                           options="{'no_quick_create': True}"/>
+                                    <field name="name"/>
+                                    <field name="unit_amount" sum="Total"
+                                           widget="float_time"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notas internas" name="notes">
+                            <field name="note" placeholder="Notas operativas..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ====================================================== -->
+    <!-- GRAPH / PIVOT                                           -->
+    <!-- ====================================================== -->
+    <record id="view_hour_wallet_graph" model="ir.ui.view">
+        <field name="name">hour.wallet.graph</field>
+        <field name="model">hour.wallet</field>
+        <field name="arch" type="xml">
+            <graph string="Horas contratadas vs consumidas" type="bar" stacked="0">
+                <field name="partner_id"/>
+                <field name="hours_purchased" type="measure"/>
+                <field name="hours_consumed" type="measure"/>
+                <field name="hours_available" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_hour_wallet_pivot" model="ir.ui.view">
+        <field name="name">hour.wallet.pivot</field>
+        <field name="model">hour.wallet</field>
+        <field name="arch" type="xml">
+            <pivot string="Análisis de bolsas">
+                <field name="partner_id" type="row"/>
+                <field name="state" type="col"/>
+                <field name="hours_purchased" type="measure"/>
+                <field name="hours_consumed" type="measure"/>
+                <field name="hours_available" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ====================================================== -->
+    <!-- ACTION                                                  -->
+    <!-- ====================================================== -->
+    <record id="action_hour_wallet" model="ir.actions.act_window">
+        <field name="name">Bolsas de horas</field>
+        <field name="res_model">hour.wallet</field>
+        <field name="view_mode">kanban,list,form,graph,pivot</field>
+        <field name="search_view_id" ref="view_hour_wallet_search"/>
+        <field name="context">{'search_default_filter_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea tu primera bolsa de horas
+            </p>
+            <p>
+                Registra las horas contratadas por un cliente y controla su consumo
+                a través de timesheets enlazados.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_hour_wallet_expiring" model="ir.actions.act_window">
+        <field name="name">Bolsas por vencer</field>
+        <field name="res_model">hour.wallet</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="domain">[('state','=','active'),('date_end','!=',False)]</field>
+        <field name="context">{'search_default_filter_expiring': 1}</field>
+    </record>
+
+    <record id="action_hour_wallet_low_balance" model="ir.actions.act_window">
+        <field name="name">Bolsas con saldo bajo</field>
+        <field name="res_model">hour.wallet</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="domain">[('low_balance','=',True),('state','=','active')]</field>
+    </record>
+
+</odoo>

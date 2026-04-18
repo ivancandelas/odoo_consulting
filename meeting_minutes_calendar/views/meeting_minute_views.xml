@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_calendar_event_form_inherit_minute" model="ir.ui.view">
+        <field name="name">calendar.event.form.inherit.meeting.minute</field>
+        <field name="model">calendar.event</field>
+        <field name="inherit_id" ref="calendar.view_calendar_event_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_create_or_open_meeting_minute"
+                            string="Crear/Abrir acta" type="object"
+                            class="oe_highlight"/>
+                </header>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_meeting_minute_form_inherit_calendar" model="ir.ui.view">
+        <field name="name">meeting.minute.form.inherit.calendar</field>
+        <field name="model">meeting.minute</field>
+        <field name="inherit_id" ref="meeting_minutes_base.view_meeting_minute_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//header/button[@name='action_schedule']" position="after">
+                <button name="action_create_or_update_calendar_event"
+                        string="Crear/Actualizar evento" type="object"
+                        invisible="state == 'cancelled'"/>
+            </xpath>
+
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_calendar_event" type="object"
+                        class="oe_stat_button" icon="fa-calendar"
+                        invisible="not calendar_event_id">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Evento</span>
+                    </div>
+                </button>
+            </xpath>
+
+            <xpath expr="//page[@name='related_meetings']//group[1]" position="inside">
+                <field name="calendar_event_id" readonly="1"/>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

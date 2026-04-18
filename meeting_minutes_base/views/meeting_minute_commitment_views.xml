@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_meeting_minute_commitment_list" model="ir.ui.view">
+        <field name="name">meeting.minute.commitment.list</field>
+        <field name="model">meeting.minute.commitment</field>
+        <field name="arch" type="xml">
+            <list string="Compromisos"
+                  decoration-success="state=='done'"
+                  decoration-muted="state=='cancelled'"
+                  decoration-info="state=='in_progress'">
+                <field name="meeting_id"/>
+                <field name="description"/>
+                <field name="responsible_partner_id" widget="many2one_avatar"/>
+                <field name="responsible_user_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="due_date"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_meeting_minute_commitment_form" model="ir.ui.view">
+        <field name="name">meeting.minute.commitment.form</field>
+        <field name="model">meeting.minute.commitment</field>
+        <field name="arch" type="xml">
+            <form string="Compromiso">
+                <header>
+                    <button name="action_mark_done" string="Marcar cumplido" type="object"
+                            class="oe_highlight" invisible="state in ('done','cancelled')"/>
+                    <button name="action_mark_cancelled" string="Cancelar" type="object"
+                            invisible="state in ('done','cancelled')"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="pending,in_progress,done"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="meeting_id"/>
+                            <field name="responsible_partner_id"
+                                   widget="many2one_avatar"/>
+                            <field name="responsible_user_id"
+                                   widget="many2one_avatar_user"/>
+                        </group>
+                        <group>
+                            <field name="due_date"/>
+                            <field name="sequence"/>
+                        </group>
+                    </group>
+                    <separator string="Descripción"/>
+                    <field name="description" nolabel="1"/>
+                    <field name="note" placeholder="Observaciones..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_meeting_minute_commitment_search" model="ir.ui.view">
+        <field name="name">meeting.minute.commitment.search</field>
+        <field name="model">meeting.minute.commitment</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="meeting_id"/>
+                <field name="description"/>
+                <field name="responsible_partner_id"/>
+                <field name="responsible_user_id"/>
+                <filter string="Mis compromisos (usuario)" name="my_commitments"
+                        domain="[('responsible_user_id','=',uid)]"/>
+                <filter string="A cargo de mi contacto" name="my_partner_commitments"
+                        domain="[('responsible_partner_id.user_ids','in',uid)]"/>
+                <filter string="Pendientes" name="pending" domain="[('state','=','pending')]"/>
+                <filter string="En curso" name="in_progress" domain="[('state','=','in_progress')]"/>
+                <filter string="Cumplidos" name="done" domain="[('state','=','done')]"/>
+                <filter string="Vencidos" name="overdue"
+                        domain="[('due_date','&lt;',context_today().strftime('%Y-%m-%d')),('state','in',('pending','in_progress'))]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Acta" name="group_meeting" context="{'group_by':'meeting_id'}"/>
+                    <filter string="Estado" name="group_state" context="{'group_by':'state'}"/>
+                    <filter string="Responsable" name="group_responsible_partner"
+                            context="{'group_by':'responsible_partner_id'}"/>
+                    <filter string="Usuario interno" name="group_responsible_user"
+                            context="{'group_by':'responsible_user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_meeting_minute_commitment" model="ir.actions.act_window">
+        <field name="name">Compromisos</field>
+        <field name="res_model">meeting.minute.commitment</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_meeting_minute_commitment_search"/>
+        <field name="context">{'search_default_my_commitments': 1, 'search_default_pending': 1}</field>
+    </record>
+
+</odoo>

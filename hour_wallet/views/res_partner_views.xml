@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_partner_form_hour_wallet" model="ir.ui.view">
+        <field name="name">res.partner.form.hour.wallet</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_hour_wallets" type="object"
+                        class="oe_stat_button" icon="fa-hourglass-half">
+                    <field name="hour_wallet_count" widget="statinfo" string="Bolsas"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

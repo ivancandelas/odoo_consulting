@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_meeting_minute_attendee_list" model="ir.ui.view">
+        <field name="name">meeting.minute.attendee.list</field>
+        <field name="model">meeting.minute.attendee</field>
+        <field name="arch" type="xml">
+            <list string="Asistentes">
+                <field name="meeting_id"/>
+                <field name="partner_id"/>
+                <field name="partner_company_id"/>
+                <field name="attendance_type"/>
+                <field name="delegate_partner_id"/>
+                <field name="attended"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_meeting_minute_attendee_search" model="ir.ui.view">
+        <field name="name">meeting.minute.attendee.search</field>
+        <field name="model">meeting.minute.attendee</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="meeting_id"/>
+                <field name="partner_id"/>
+                <field name="partner_company_id"/>
+                <filter string="Asistió" name="attended" domain="[('attended','=',True)]"/>
+                <filter string="No asistió" name="not_attended" domain="[('attended','=',False)]"/>
+            </search>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_meeting_minute_list" model="ir.ui.view">
+        <field name="name">meeting.minute.list</field>
+        <field name="model">meeting.minute</field>
+        <field name="arch" type="xml">
+            <list string="Actas de Reunión" decoration-info="state=='scheduled'"
+                  decoration-success="state=='done'" decoration-muted="state=='cancelled'"
+                  decoration-warning="state=='in_progress'">
+                <field name="name"/>
+                <field name="title"/>
+                <field name="partner_id"/>
+                <field name="scheduled_date"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="follow_up_type" optional="show"/>
+                <field name="parent_meeting_id" optional="hide"/>
+                <field name="root_meeting_id" optional="hide"/>
+                <field name="attendee_count" string="Asistentes"/>
+                <field name="commitment_count" string="Compromisos"/>
+                <field name="follow_up_count" string="Seguimientos" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-info="state=='scheduled'"
+                       decoration-success="state=='done'"
+                       decoration-warning="state=='in_progress'"
+                       decoration-muted="state in ('draft','cancelled')"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_meeting_minute_form" model="ir.ui.view">
+        <field name="name">meeting.minute.form</field>
+        <field name="model">meeting.minute</field>
+        <field name="arch" type="xml">
+            <form string="Acta de Reunión">
+                <header>
+                    <button name="action_schedule" string="Programar" type="object"
+                            class="oe_highlight" invisible="state not in ('draft','cancelled')"/>
+                    <button name="action_start" string="Iniciar reunión" type="object"
+                            class="oe_highlight" invisible="state not in ('scheduled','draft')"/>
+                    <button name="action_finish" string="Finalizar reunión" type="object"
+                            class="oe_highlight" invisible="state != 'in_progress'"/>
+                    <button name="action_open_follow_up_wizard"
+                            string="Crear reunión de seguimiento" type="object"
+                            invisible="state in ('draft','cancelled')"/>
+                    <button name="action_cancel" string="Cancelar" type="object"
+                            invisible="state in ('done','cancelled')"/>
+                    <button name="action_reset_to_draft" string="Volver a borrador" type="object"
+                            invisible="state not in ('cancelled',)"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,scheduled,in_progress,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_follow_ups" type="object"
+                                class="oe_stat_button" icon="fa-sitemap"
+                                invisible="follow_up_count == 0">
+                            <field name="follow_up_count" widget="statinfo"
+                                   string="Seguimientos"/>
+                        </button>
+                        <button name="action_view_thread" type="object"
+                                class="oe_stat_button" icon="fa-code-fork"
+                                invisible="not parent_meeting_id and follow_up_count == 0">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Ver hilo</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="title"/>
+                        <h1>
+                            <field name="title" placeholder="Título del acta..."/>
+                        </h1>
+                        <h3>
+                            <field name="name" readonly="1"/>
+                        </h3>
+                        <div invisible="not parent_meeting_id" class="text-muted">
+                            Reunión derivada de
+                            <field name="parent_meeting_id" readonly="1" nolabel="1"
+                                   class="oe_inline"/>
+                            <span invisible="not follow_up_type">
+                                ·
+                                <field name="follow_up_type" readonly="1" nolabel="1"
+                                       class="oe_inline"/>
+                            </span>
+                        </div>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="location"/>
+                        </group>
+                        <group>
+                            <field name="scheduled_date"/>
+                            <field name="duration" widget="float_time"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Objetivo y agenda" name="general">
+                            <group>
+                                <field name="objective" nolabel="1"
+                                       placeholder="¿Por qué se convoca esta reunión?"/>
+                            </group>
+                            <separator string="Agenda planificada"/>
+                            <field name="agenda" nolabel="1"
+                                   placeholder="Puntos que se planean tratar..."/>
+                        </page>
+                        <page string="Desarrollo / Notas" name="development">
+                            <div class="alert alert-info" role="alert">
+                                Registre aquí lo ocurrido durante la reunión:
+                                puntos tratados, avances, comentarios, incidentes
+                                y decisiones parciales. Los acuerdos finales van
+                                en la pestaña <strong>Conclusiones</strong>.
+                            </div>
+                            <field name="development_notes" nolabel="1"
+                                   placeholder="Narrativa de la sesión, puntos tratados, avances y observaciones..."/>
+                        </page>
+                        <page string="Asistentes" name="attendees">
+                            <field name="attendee_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="partner_id"/>
+                                    <field name="partner_company_id"/>
+                                    <field name="attendance_type"/>
+                                    <field name="delegate_partner_id"
+                                           column_invisible="parent.state == 'cancelled'"
+                                           readonly="attendance_type != 'delegate'"
+                                           required="attendance_type == 'delegate'"/>
+                                    <field name="attended" widget="boolean_toggle"/>
+                                    <field name="note" optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Conclusiones" name="conclusions">
+                            <div class="alert alert-info" role="alert">
+                                Acuerdos finales, definiciones y resultado de la reunión.
+                                Para la narrativa de la sesión utilice
+                                <strong>Desarrollo / Notas</strong>.
+                            </div>
+                            <field name="conclusions" nolabel="1"
+                                   placeholder="Acuerdos, definiciones y resultado final..."/>
+                            <group>
+                                <group string="Tiempos reales">
+                                    <field name="start_real"/>
+                                    <field name="end_real"/>
+                                    <field name="real_duration" widget="float_time"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Compromisos" name="commitments">
+                            <field name="commitment_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="description"/>
+                                    <field name="responsible_partner_id"
+                                           widget="many2one_avatar"/>
+                                    <field name="responsible_user_id"
+                                           widget="many2one_avatar_user"
+                                           optional="hide"/>
+                                    <field name="due_date"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state=='done'"
+                                           decoration-info="state=='in_progress'"
+                                           decoration-muted="state=='cancelled'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Reuniones relacionadas" name="related_meetings">
+                            <group>
+                                <group string="Contexto del hilo">
+                                    <field name="parent_meeting_id" readonly="1"/>
+                                    <field name="follow_up_type" readonly="1"
+                                           invisible="not parent_meeting_id"/>
+                                    <field name="root_meeting_id" readonly="1"
+                                           invisible="not parent_meeting_id"/>
+                                </group>
+                                <group>
+                                    <button name="action_open_follow_up_wizard"
+                                            string="Crear reunión de seguimiento"
+                                            type="object" class="btn-primary"
+                                            invisible="state in ('draft','cancelled')"/>
+                                    <button name="action_view_thread"
+                                            string="Ver hilo completo"
+                                            type="object"
+                                            invisible="not parent_meeting_id and follow_up_count == 0"/>
+                                </group>
+                            </group>
+                            <separator string="Reuniones derivadas"/>
+                            <field name="child_meeting_ids"
+                                   context="{'default_parent_meeting_id': id,
+                                             'default_partner_id': partner_id}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="title"/>
+                                    <field name="follow_up_type"/>
+                                    <field name="scheduled_date"/>
+                                    <field name="user_id" widget="many2one_avatar_user"/>
+                                    <field name="state" widget="badge"
+                                           decoration-info="state=='scheduled'"
+                                           decoration-success="state=='done'"
+                                           decoration-warning="state=='in_progress'"
+                                           decoration-muted="state in ('draft','cancelled')"/>
+                                </list>
+                            </field>
+                            <group string="Datos heredados (campos legado)"
+                                   invisible="not has_legacy_next_meeting_data">
+                                <div colspan="2" class="alert alert-warning" role="alert">
+                                    Estos campos provienen de la versión anterior del módulo
+                                    y ya no se editan desde aquí. Se conservan para consulta;
+                                    cree reuniones derivadas arriba.
+                                </div>
+                                <field name="next_meeting_id" readonly="1"
+                                       invisible="not next_meeting_id"/>
+                                <field name="next_meeting_date" readonly="1"
+                                       invisible="not next_meeting_date"/>
+                                <field name="next_meeting_location" readonly="1"
+                                       invisible="not next_meeting_location"/>
+                                <field name="next_meeting_objective" readonly="1"
+                                       invisible="not next_meeting_objective"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_meeting_minute_search" model="ir.ui.view">
+        <field name="name">meeting.minute.search</field>
+        <field name="model">meeting.minute</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Acta">
+                <field name="name"/>
+                <field name="title"/>
+                <field name="partner_id"/>
+                <field name="user_id"/>
+                <field name="parent_meeting_id" string="Reunión origen"/>
+                <field name="root_meeting_id" string="Reunión raíz"/>
+                <field name="follow_up_type"/>
+                <filter string="Mis actas" name="my_meetings"
+                        domain="[('user_id','=',uid)]"/>
+                <filter string="Programadas" name="scheduled"
+                        domain="[('state','=','scheduled')]"/>
+                <filter string="En curso" name="in_progress"
+                        domain="[('state','=','in_progress')]"/>
+                <filter string="Finalizadas" name="done"
+                        domain="[('state','=','done')]"/>
+                <separator/>
+                <filter string="Reuniones raíz" name="root_only"
+                        domain="[('parent_meeting_id','=',False)]"/>
+                <filter string="Reuniones derivadas" name="derived_only"
+                        domain="[('parent_meeting_id','!=',False)]"/>
+                <separator/>
+                <filter string="Este mes" name="this_month"
+                        domain="[('scheduled_date','&gt;=', (context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Estado" name="group_state" context="{'group_by':'state'}"/>
+                    <filter string="Responsable" name="group_user" context="{'group_by':'user_id'}"/>
+                    <filter string="Cliente" name="group_partner" context="{'group_by':'partner_id'}"/>
+                    <filter string="Hilo (raíz)" name="group_root"
+                            context="{'group_by':'root_meeting_id'}"/>
+                    <filter string="Tipo de seguimiento" name="group_follow_up_type"
+                            context="{'group_by':'follow_up_type'}"/>
+                    <filter string="Fecha" name="group_date" context="{'group_by':'scheduled_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_meeting_minute_calendar" model="ir.ui.view">
+        <field name="name">meeting.minute.calendar</field>
+        <field name="model">meeting.minute</field>
+        <field name="arch" type="xml">
+            <calendar string="Actas de Reunión" date_start="scheduled_date"
+                      color="user_id" mode="month" quick_create="0">
+                <field name="title"/>
+                <field name="partner_id"/>
+                <field name="state"/>
+                <field name="follow_up_type"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="action_meeting_minute" model="ir.actions.act_window">
+        <field name="name">Actas de Reunión</field>
+        <field name="res_model">meeting.minute</field>
+        <field name="view_mode">list,form,calendar</field>
+        <field name="search_view_id" ref="view_meeting_minute_search"/>
+        <field name="context">{'search_default_my_meetings': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Cree su primera acta de reunión.
+            </p>
+            <p>Documente reuniones con clientes, asistentes, compromisos y reuniones de seguimiento.</p>
+        </field>
+    </record>
+
+</odoo>

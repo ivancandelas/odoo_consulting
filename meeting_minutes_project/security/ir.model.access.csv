@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mm_to_task_wizard_user,mm.to.task.wizard.user,model_meeting_minute_to_task_wizard,meeting_minutes_base.group_meeting_minutes_user,1,1,1,1

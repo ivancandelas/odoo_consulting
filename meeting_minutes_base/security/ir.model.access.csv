@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_meeting_minute_user,meeting.minute.user,model_meeting_minute,group_meeting_minutes_user,1,1,1,0
+access_meeting_minute_manager,meeting.minute.manager,model_meeting_minute,group_meeting_minutes_manager,1,1,1,1
+access_meeting_minute_attendee_user,meeting.minute.attendee.user,model_meeting_minute_attendee,group_meeting_minutes_user,1,1,1,1
+access_meeting_minute_attendee_manager,meeting.minute.attendee.manager,model_meeting_minute_attendee,group_meeting_minutes_manager,1,1,1,1
+access_meeting_minute_commitment_user,meeting.minute.commitment.user,model_meeting_minute_commitment,group_meeting_minutes_user,1,1,1,1
+access_meeting_minute_commitment_manager,meeting.minute.commitment.manager,model_meeting_minute_commitment,group_meeting_minutes_manager,1,1,1,1
+access_meeting_minute_follow_up_wizard_user,meeting.minute.follow.up.wizard.user,model_meeting_minute_follow_up_wizard,group_meeting_minutes_user,1,1,1,1
+access_meeting_minute_follow_up_wizard_manager,meeting.minute.follow.up.wizard.manager,model_meeting_minute_follow_up_wizard,group_meeting_minutes_manager,1,1,1,1

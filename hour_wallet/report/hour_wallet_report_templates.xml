@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_hour_wallet_consumption">
+        <t t-call="web.html_container">
+            <t t-call="web.external_layout">
+                <t t-set="o" t-value="docs"/>
+                <div class="page">
+                    <h2>Reporte de consumo de bolsa de horas</h2>
+                    <div class="row mt16 mb16">
+                        <div class="col-6">
+                            <strong>Cliente:</strong>
+                            <span t-out="data.get('partner') and data['partner'].display_name or 'Varios'"/>
+                            <br/>
+                            <strong>Período:</strong>
+                            <span t-out="data['date_from']"/> a
+                            <span t-out="data['date_to']"/>
+                        </div>
+                        <div class="col-6 text-end">
+                            <strong>Emitido:</strong>
+                            <span t-out="data['generated_on']"/>
+                            <br/>
+                            <strong>Por:</strong>
+                            <span t-out="data['generated_by'].name"/>
+                        </div>
+                    </div>
+
+                    <t t-foreach="data['wallets_data']" t-as="wd">
+                        <t t-set="w" t-value="wd['wallet']"/>
+                        <div class="mt24 mb8" style="border-bottom:1px solid #ddd;">
+                            <h3 style="margin-bottom:0">
+                                <span t-out="w.name"/> — <span t-out="w.display_name"/>
+                            </h3>
+                            <div t-if="w.description" class="text-muted">
+                                <span t-out="w.description"/>
+                            </div>
+                        </div>
+
+                        <table class="table table-sm" style="width:100%;">
+                            <tr>
+                                <td><strong>Horas contratadas</strong></td>
+                                <td><span t-out="'%.2f' % w.hours_purchased"/></td>
+                                <td><strong>Horas consumidas (total)</strong></td>
+                                <td><span t-out="'%.2f' % w.hours_consumed"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Horas disponibles</strong></td>
+                                <td><span t-out="'%.2f' % w.hours_available"/></td>
+                                <td><strong>Consumo en el período</strong></td>
+                                <td><span t-out="'%.2f' % wd['period_hours']"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Inicio</strong></td>
+                                <td><span t-out="w.date_start"/></td>
+                                <td><strong>Vencimiento</strong></td>
+                                <td><span t-out="w.date_end"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Estado</strong></td>
+                                <td colspan="3">
+                                    <span t-out="dict(w._fields['state'].selection).get(w.state)"/>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <h4 class="mt16">Detalle de consumo</h4>
+                        <table class="table table-sm table-striped" t-if="wd['lines']">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Usuario</th>
+                                    <th>Proyecto / Tarea</th>
+                                    <th>Descripción</th>
+                                    <th class="text-end">Horas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="wd['lines']" t-as="line">
+                                    <td><span t-out="line.date"/></td>
+                                    <td><span t-out="line.employee_id.name or line.user_id.name or ''"/></td>
+                                    <td>
+                                        <span t-out="line.project_id.name or ''"/>
+                                        <t t-if="line.task_id"> / <span t-out="line.task_id.name"/></t>
+                                    </td>
+                                    <td><span t-out="line.name or ''"/></td>
+                                    <td class="text-end">
+                                        <span t-out="'%.2f' % line.unit_amount"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" class="text-end">
+                                        <strong>Total período</strong>
+                                    </td>
+                                    <td class="text-end">
+                                        <strong><span t-out="'%.2f' % wd['period_hours']"/></strong>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p t-if="not wd['lines']" class="text-muted">
+                            Sin consumos registrados en el período.
+                        </p>
+                    </t>
+
+                    <div class="mt32">
+                        <p class="text-muted" style="font-size:90%;">
+                            Este reporte incluye únicamente las horas registradas
+                            dentro del período indicado. El saldo disponible refleja
+                            el acumulado total de la bolsa al momento de la emisión.
+                        </p>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

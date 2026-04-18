@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_meeting_minutes_root" name="Actas de Reunión"
+              web_icon="meeting_minutes_base,static/description/icon.png"
+              sequence="90"
+              groups="group_meeting_minutes_user"/>
+
+    <menuitem id="menu_meeting_minute" name="Actas"
+              parent="menu_meeting_minutes_root"
+              action="action_meeting_minute"
+              sequence="10"/>
+
+    <menuitem id="menu_meeting_minute_commitment" name="Compromisos"
+              parent="menu_meeting_minutes_root"
+              action="action_meeting_minute_commitment"
+              sequence="20"/>
+
+    <menuitem id="menu_meeting_minutes_config" name="Configuración"
+              parent="menu_meeting_minutes_root"
+              sequence="99"
+              groups="group_meeting_minutes_manager"/>
+
+</odoo>
