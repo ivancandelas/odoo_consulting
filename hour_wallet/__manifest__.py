@@ -31,6 +31,8 @@ Gestiona contratos o bolsas de horas por cliente:
         "security/ir.model.access.csv",
         "data/hour_wallet_sequence.xml",
         "data/hour_wallet_type_data.xml",
+        "report/hour_wallet_report.xml",
+        "report/hour_wallet_report_templates.xml",
         "data/mail_template_data.xml",
         "data/hour_wallet_cron.xml",
         "views/hour_wallet_type_views.xml",
@@ -39,8 +41,6 @@ Gestiona contratos o bolsas de horas por cliente:
         "views/project_views.xml",
         "views/res_partner_views.xml",
         "wizard/hour_wallet_report_wizard_views.xml",
-        "report/hour_wallet_report.xml",
-        "report/hour_wallet_report_templates.xml",
         "views/hour_wallet_menus.xml",
     ],
     "demo": [
