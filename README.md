@@ -1,7 +1,7 @@
 [![License: LGPL-3](https://img.shields.io/badge/licence-LGPL--3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0-standalone.html)
 [![Odoo 18](https://img.shields.io/badge/odoo-18.0-875A7B.svg)](https://www.odoo.com/documentation/18.0/)
 
-odoo18_nexus
+Odoo Consulting Modules
 ============
 
 Conjunto de módulos para Odoo 18 enfocados en la operación interna de
