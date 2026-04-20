@@ -29,7 +29,7 @@
                         <t t-set="w" t-value="wd['wallet']"/>
                         <div class="mt24 mb8" style="border-bottom:1px solid #ddd;">
                             <h3 style="margin-bottom:0">
-                                <span t-out="w.name"/> — <span t-out="w.display_name"/>
+                                <span t-out="w.display_name"/>
                             </h3>
                             <div t-if="w.description" class="text-muted">
                                 <span t-out="w.description"/>
