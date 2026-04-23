@@ -151,6 +151,36 @@ class AccountAnalyticLine(models.Model):
             lines_to_clear.write({"hour_wallet_id": False})
         return True
 
+    @api.ondelete(at_uninstall=False)
+    def _unlink_block_if_wallet_linked(self):
+        """Impide borrar un timesheet ligado a una bolsa de horas.
+
+        Protege el consumo ya reconocido: si el usuario quiere eliminar
+        la línea, primero debe desvincularla de la bolsa (acción reservada
+        al grupo manager). Así evitamos pérdidas silenciosas del consumo
+        registrado.
+
+        El contexto ``hour_wallet_force_reassign=True`` bypassa la regla
+        para flujos internos (migraciones, cron).
+        """
+        if self.env.context.get("hour_wallet_force_reassign"):
+            return
+        linked = self.filtered("hour_wallet_id")
+        if not linked:
+            return
+        wallets = ", ".join(
+            sorted({line.hour_wallet_id.display_name for line in linked})
+        )
+        raise UserError(
+            _(
+                "No se puede eliminar un timesheet vinculado a una bolsa de "
+                "horas (%s).\n"
+                "Desvincúlelo primero desde el form de la bolsa "
+                "(acción 'Desvincular') y luego elimínelo."
+            )
+            % wallets
+        )
+
     def action_delete_from_wallet(self):
         """Elimina completamente la línea.
 
@@ -158,6 +188,11 @@ class AccountAnalyticLine(models.Model):
         contra la bolsa). Si la línea tiene ``task_id``, se impide el
         borrado: hay que usar ``action_unlink_from_wallet`` para
         preservar el registro ligado a la tarea.
+
+        El contexto ``hour_wallet_force_reassign`` bypassa el ondelete
+        guard (``_unlink_block_if_wallet_linked``) porque esta acción
+        es justamente el flujo explícito y auditado de eliminación;
+        está ya restringida al grupo manager en la vista.
         """
         with_task = self.filtered("task_id")
         if with_task:
@@ -168,7 +203,7 @@ class AccountAnalyticLine(models.Model):
                     "las horas de la bolsa."
                 )
             )
-        self.unlink()
+        self.with_context(hour_wallet_force_reassign=True).unlink()
         return True
 
     def _validate_wallet_consumption(self, delta_by_wallet):
