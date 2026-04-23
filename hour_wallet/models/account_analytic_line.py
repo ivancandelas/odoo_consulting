@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from odoo import api, fields, models
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 
 class AccountAnalyticLine(models.Model):
@@ -97,6 +98,79 @@ class AccountAnalyticLine(models.Model):
     # ------------------------------------------------------------------
     # VALIDACIONES
     # ------------------------------------------------------------------
+    def _check_wallet_reassignment_allowed(self, new_wallet_id):
+        """Impide reasignar un timesheet a otra bolsa.
+
+        Una vez vinculado a una bolsa, el consumo queda "congelado":
+        - Mover a otra bolsa queda bloqueado para cualquier usuario (evita
+          doble conteo y pérdida de trazabilidad del consumo reconocido).
+        - Desvincular (poner a False) queda permitido solo para el grupo
+          manager, como escape hatch ante errores de asignación.
+
+        El contexto ``hour_wallet_force_reassign=True`` permite saltar la
+        restricción; reservado para flujos internos (cron, migraciones).
+        """
+        if self.env.context.get("hour_wallet_force_reassign"):
+            return
+        is_manager = self.env.user.has_group(
+            "hour_wallet.group_hour_wallet_manager"
+        )
+        for line in self:
+            if not line.hour_wallet_id:
+                continue
+            if new_wallet_id and new_wallet_id != line.hour_wallet_id.id:
+                raise UserError(
+                    _(
+                        "El timesheet '%(line)s' ya está vinculado a la bolsa "
+                        "'%(wallet)s'. No es posible reasignarlo a otra bolsa."
+                    )
+                    % {
+                        "line": line.display_name or line.name or line.id,
+                        "wallet": line.hour_wallet_id.display_name,
+                    }
+                )
+            if not new_wallet_id and not is_manager:
+                raise UserError(
+                    _(
+                        "Solo un responsable de bolsas puede desvincular un "
+                        "timesheet de la bolsa '%s'."
+                    )
+                    % line.hour_wallet_id.display_name
+                )
+
+    def action_unlink_from_wallet(self):
+        """Desvincula la línea de su bolsa sin borrar el timesheet.
+
+        La línea conserva su proyecto/tarea y queda disponible para
+        asignarse de nuevo (a la misma bolsa u otra). El lock de
+        ``_check_wallet_reassignment_allowed`` ya restringe esta acción
+        al grupo manager.
+        """
+        lines_to_clear = self.filtered("hour_wallet_id")
+        if lines_to_clear:
+            lines_to_clear.write({"hour_wallet_id": False})
+        return True
+
+    def action_delete_from_wallet(self):
+        """Elimina completamente la línea.
+
+        Solo aplica a timesheets **sin tarea asignada** (consumos directos
+        contra la bolsa). Si la línea tiene ``task_id``, se impide el
+        borrado: hay que usar ``action_unlink_from_wallet`` para
+        preservar el registro ligado a la tarea.
+        """
+        with_task = self.filtered("task_id")
+        if with_task:
+            raise UserError(
+                _(
+                    "No se puede eliminar un timesheet ligado a una tarea. "
+                    "Use 'Desvincular' para mantenerlo en la tarea y liberar "
+                    "las horas de la bolsa."
+                )
+            )
+        self.unlink()
+        return True
+
     def _validate_wallet_consumption(self, delta_by_wallet):
         """Valida el consumo por bolsa.
 
@@ -130,6 +204,8 @@ class AccountAnalyticLine(models.Model):
         return lines
 
     def write(self, vals):
+        if "hour_wallet_id" in vals:
+            self._check_wallet_reassignment_allowed(vals["hour_wallet_id"])
         tracked = ("hour_wallet_id", "unit_amount")
         before = {}
         if any(k in vals for k in tracked):

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Hour Wallet - Bolsas de Horas",
-    "version": "18.0.1.0.1",
+    "version": "18.0.1.0.2",
     "summary": "Gestión de bolsas de horas vendidas a clientes con control de saldo, vigencia y reportes.",
     "description": """
 Hour Wallet
@@ -41,6 +41,7 @@ Gestiona contratos o bolsas de horas por cliente:
         "views/project_views.xml",
         "views/res_partner_views.xml",
         "wizard/hour_wallet_report_wizard_views.xml",
+        "wizard/hour_wallet_assign_timesheets_wizard_views.xml",
         "views/hour_wallet_menus.xml",
     ],
     "demo": [

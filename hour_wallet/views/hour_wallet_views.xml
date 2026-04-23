@@ -156,6 +156,9 @@
                             string="Volver a borrador"
                             invisible="state == 'draft'"
                             groups="hour_wallet.group_hour_wallet_manager"/>
+                    <button name="action_open_assign_timesheets_wizard" type="object"
+                            string="Asignar timesheets" class="btn-secondary"
+                            invisible="state != 'active'"/>
                     <button name="action_open_report_wizard" type="object"
                             string="Generar reporte" class="btn-secondary"
                             invisible="state == 'draft'"/>
@@ -233,7 +236,7 @@
                                        'default_partner_id': partner_id,
                                        'default_project_id': project_id,
                                    }">
-                                <list editable="bottom">
+                                <list editable="bottom" delete="0">
                                     <field name="date"/>
                                     <field name="employee_id"/>
                                     <field name="project_id"/>
@@ -242,6 +245,20 @@
                                     <field name="name"/>
                                     <field name="unit_amount" sum="Total"
                                            widget="float_time"/>
+                                    <button name="action_unlink_from_wallet"
+                                            type="object"
+                                            icon="fa-unlink"
+                                            title="Desvincular de la bolsa (conserva la línea en la tarea)"
+                                            invisible="not task_id"
+                                            confirm="¿Desvincular este timesheet de la bolsa? Se conservará ligado a la tarea y quedará disponible para asignarse de nuevo."
+                                            groups="hour_wallet.group_hour_wallet_manager"/>
+                                    <button name="action_delete_from_wallet"
+                                            type="object"
+                                            icon="fa-trash"
+                                            title="Eliminar timesheet"
+                                            invisible="task_id"
+                                            confirm="¿Eliminar este timesheet? No se puede deshacer."
+                                            groups="hour_wallet.group_hour_wallet_manager"/>
                                 </list>
                             </field>
                         </page>

@@ -424,6 +424,24 @@ class HourWallet(models.Model):
             },
         }
 
+    def action_open_assign_timesheets_wizard(self):
+        self.ensure_one()
+        if not self._is_consumable():
+            raise UserError(
+                _(
+                    "La bolsa '%s' no admite nuevos consumos en su estado actual."
+                )
+                % self.display_name
+            )
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Asignar timesheets a bolsa"),
+            "res_model": "hour.wallet.assign.timesheets.wizard",
+            "view_mode": "form",
+            "target": "new",
+            "context": {"default_wallet_id": self.id},
+        }
+
     # ==================================================================
     # CRON: ESTADOS Y ALERTAS
     # ==================================================================
