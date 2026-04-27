@@ -65,6 +65,10 @@
                 <field name="type_id" optional="show"/>
                 <field name="hours_purchased" sum="Total contratadas"/>
                 <field name="hours_consumed" sum="Total consumidas"/>
+                <field name="hours_consumed_billable" sum="Total facturables"
+                       optional="hide"/>
+                <field name="hours_consumed_non_billable" sum="Total no facturables"
+                       optional="hide"/>
                 <field name="hours_available" sum="Total disponibles"/>
                 <field name="consumption_percent" widget="progressbar"
                        options="{'current_value': 'consumption_percent', 'max_value': 100}"/>
@@ -203,6 +207,8 @@
                             <field name="hours_purchased"
                                    readonly="state not in ('draft',)"/>
                             <field name="hours_consumed"/>
+                            <field name="hours_consumed_billable"/>
+                            <field name="hours_consumed_non_billable"/>
                             <field name="hours_available"/>
                             <field name="consumption_percent" widget="progressbar"/>
                             <field name="date_start"/>
@@ -243,6 +249,7 @@
                                     <field name="task_id"
                                            options="{'no_quick_create': True}"/>
                                     <field name="name"/>
+                                    <field name="is_billable"/>
                                     <field name="unit_amount" sum="Total"
                                            widget="float_time"/>
                                     <button name="action_unlink_from_wallet"

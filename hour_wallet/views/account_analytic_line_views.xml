@@ -14,6 +14,7 @@
                 <field name="hour_wallet_id"
                        optional="show"
                        options="{'no_create': True}"/>
+                <field name="is_billable" optional="show"/>
                 <field name="wallet_available_hours"
                        optional="hide"
                        widget="float_time"
@@ -34,6 +35,7 @@
             <xpath expr="//field[@name='task_id']" position="after">
                 <field name="hour_wallet_id"
                        options="{'no_create': True}"/>
+                <field name="is_billable"/>
                 <field name="wallet_available_hours"
                        widget="float_time"
                        string="Saldo disponible en bolsa"

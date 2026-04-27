@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     "name": "Hour Wallet - Bolsas de Horas",
-    "version": "18.0.1.0.2",
+    "version": "18.0.1.0.3",
     "summary": "Gestión de bolsas de horas vendidas a clientes con control de saldo, vigencia y reportes.",
     "description": """
 Hour Wallet

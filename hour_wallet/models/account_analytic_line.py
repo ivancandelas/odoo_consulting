@@ -41,6 +41,14 @@ class AccountAnalyticLine(models.Model):
         readonly=True,
         string="Estado bolsa",
     )
+    is_billable = fields.Boolean(
+        string="Facturable",
+        default=True,
+        index=True,
+        help="Si está marcada, la hora se reporta al cliente como facturable. "
+             "Las horas no facturables siguen consumiendo la bolsa pero se "
+             "muestran por separado en el reporte enviado al cliente.",
+    )
 
     # ------------------------------------------------------------------
     # COMPUTES / ONCHANGES
@@ -233,7 +241,12 @@ class AccountAnalyticLine(models.Model):
         # usa hours_consumed (stored). Como acabamos de crear, ya está dentro; validamos
         # que el total no haya roto límites.
         for wallet in deltas:
-            wallet.invalidate_recordset(["hours_consumed", "hours_available"])
+            wallet.invalidate_recordset([
+                "hours_consumed",
+                "hours_consumed_billable",
+                "hours_consumed_non_billable",
+                "hours_available",
+            ])
         for wallet, delta in deltas.items():
             wallet._check_consumption_allowed(0.0)  # re-valida estado tras update
         return lines
@@ -241,7 +254,7 @@ class AccountAnalyticLine(models.Model):
     def write(self, vals):
         if "hour_wallet_id" in vals:
             self._check_wallet_reassignment_allowed(vals["hour_wallet_id"])
-        tracked = ("hour_wallet_id", "unit_amount")
+        tracked = ("hour_wallet_id", "unit_amount", "is_billable")
         before = {}
         if any(k in vals for k in tracked):
             for line in self:
@@ -255,7 +268,12 @@ class AccountAnalyticLine(models.Model):
                     touched |= old_wallet
                 if line.hour_wallet_id:
                     touched |= line.hour_wallet_id
-            touched.invalidate_recordset(["hours_consumed", "hours_available"])
+            touched.invalidate_recordset([
+                "hours_consumed",
+                "hours_consumed_billable",
+                "hours_consumed_non_billable",
+                "hours_available",
+            ])
             # Valida cada bolsa tocada (detecta agotamiento / vencimiento).
             for wallet in touched:
                 wallet._check_consumption_allowed(0.0)

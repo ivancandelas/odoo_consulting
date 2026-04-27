@@ -75,11 +75,19 @@ class HourWalletReportWizard(models.TransientModel):
                 ],
                 order="date asc",
             )
+            billable_lines = lines.filtered("is_billable")
+            non_billable_lines = lines - billable_lines
             data.append(
                 {
                     "wallet": wallet,
                     "lines": lines,
                     "period_hours": sum(lines.mapped("unit_amount")),
+                    "period_hours_billable": sum(
+                        billable_lines.mapped("unit_amount")
+                    ),
+                    "period_hours_non_billable": sum(
+                        non_billable_lines.mapped("unit_amount")
+                    ),
                 }
             )
         return {

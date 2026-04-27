@@ -44,6 +44,12 @@
                                 <td><span t-out="'%.2f' % w.hours_consumed"/></td>
                             </tr>
                             <tr>
+                                <td><strong>Horas facturables</strong></td>
+                                <td><span t-out="'%.2f' % w.hours_consumed_billable"/></td>
+                                <td><strong>Horas no facturables</strong></td>
+                                <td><span t-out="'%.2f' % w.hours_consumed_non_billable"/></td>
+                            </tr>
+                            <tr>
                                 <td><strong>Horas disponibles</strong></td>
                                 <td><span t-out="'%.2f' % w.hours_available"/></td>
                                 <td><strong>Consumo en el período</strong></td>
@@ -71,6 +77,7 @@
                                     <th>Usuario</th>
                                     <th>Proyecto / Tarea</th>
                                     <th>Descripción</th>
+                                    <th class="text-center">Facturable</th>
                                     <th class="text-end">Horas</th>
                                 </tr>
                             </thead>
@@ -83,12 +90,32 @@
                                         <t t-if="line.task_id"> / <span t-out="line.task_id.name"/></t>
                                     </td>
                                     <td><span t-out="line.name or ''"/></td>
+                                    <td class="text-center">
+                                        <span t-if="line.is_billable">Sí</span>
+                                        <span t-else="" class="text-muted">No</span>
+                                    </td>
                                     <td class="text-end">
                                         <span t-out="'%.2f' % line.unit_amount"/>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td colspan="4" class="text-end">
+                                    <td colspan="5" class="text-end">
+                                        <strong>Total facturables</strong>
+                                    </td>
+                                    <td class="text-end">
+                                        <strong><span t-out="'%.2f' % wd['period_hours_billable']"/></strong>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="text-end">
+                                        <strong>Total no facturables</strong>
+                                    </td>
+                                    <td class="text-end">
+                                        <strong><span t-out="'%.2f' % wd['period_hours_non_billable']"/></strong>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5" class="text-end">
                                         <strong>Total período</strong>
                                     </td>
                                     <td class="text-end">

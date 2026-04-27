@@ -104,6 +104,18 @@ class HourWallet(models.Model):
         store=True,
         digits=(12, 2),
     )
+    hours_consumed_billable = fields.Float(
+        string="Horas consumidas (facturables)",
+        compute="_compute_hours_consumed",
+        store=True,
+        digits=(12, 2),
+    )
+    hours_consumed_non_billable = fields.Float(
+        string="Horas consumidas (no facturables)",
+        compute="_compute_hours_consumed",
+        store=True,
+        digits=(12, 2),
+    )
     hours_available = fields.Float(
         string="Horas disponibles",
         compute="_compute_hours_consumed",
@@ -203,26 +215,45 @@ class HourWallet(models.Model):
     @api.depends(
         "timesheet_ids.unit_amount",
         "timesheet_ids.hour_wallet_id",
+        "timesheet_ids.is_billable",
         "hours_purchased",
         "alert_threshold_percent",
     )
     def _compute_hours_consumed(self):
         """Recalcula consumo, saldo, %, y flag de saldo bajo.
 
-        Se usa read_group para rendimiento en consultas por batch.
+        Se usa read_group para rendimiento en consultas por batch. El groupby
+        adicional por `is_billable` permite obtener los desgloses facturable
+        y no facturable en una sola query.
         """
-        consumed_by_wallet = {}
+        billable_by_wallet = {}
+        non_billable_by_wallet = {}
         if self.ids:
             groups = self.env["account.analytic.line"].read_group(
                 domain=[("hour_wallet_id", "in", self.ids)],
                 fields=["unit_amount:sum"],
-                groupby=["hour_wallet_id"],
+                groupby=["hour_wallet_id", "is_billable"],
+                lazy=False,
             )
-            consumed_by_wallet = {
-                g["hour_wallet_id"][0]: g["unit_amount"] for g in groups
-            }
+            for g in groups:
+                wallet_id = g["hour_wallet_id"][0]
+                amount = g["unit_amount"] or 0.0
+                if g.get("is_billable"):
+                    billable_by_wallet[wallet_id] = (
+                        billable_by_wallet.get(wallet_id, 0.0) + amount
+                    )
+                else:
+                    non_billable_by_wallet[wallet_id] = (
+                        non_billable_by_wallet.get(wallet_id, 0.0) + amount
+                    )
         for rec in self:
-            consumed = consumed_by_wallet.get(rec.id, 0.0)
+            billable = billable_by_wallet.get(rec.id, 0.0)
+            non_billable = non_billable_by_wallet.get(rec.id, 0.0)
+            consumed = billable + non_billable
+            rec.hours_consumed_billable = float_round(billable, precision_digits=2)
+            rec.hours_consumed_non_billable = float_round(
+                non_billable, precision_digits=2
+            )
             rec.hours_consumed = float_round(consumed, precision_digits=2)
             rec.hours_available = float_round(
                 rec.hours_purchased - consumed, precision_digits=2
