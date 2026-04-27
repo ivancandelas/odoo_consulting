@@ -65,6 +65,39 @@
                     <group class="oe_subtotal_footer">
                         <field name="total_selected_hours" widget="float_time"/>
                     </group>
+                    <field name="allow_overdraft" invisible="1"/>
+                    <field name="would_overdraft" invisible="1"/>
+                    <field name="overdraft_amount" invisible="1"/>
+                    <div class="alert alert-warning"
+                         role="alert"
+                         invisible="not would_overdraft or not allow_overdraft">
+                        <strong>Atención:</strong>
+                        Esta asignación supera el saldo contratado en
+                        <field name="overdraft_amount"
+                               nolabel="1"
+                               readonly="1"
+                               class="oe_inline"
+                               widget="float_time"/> h.
+                        La bolsa permite sobregiro; marca la casilla para
+                        autorizar la operación. Quedará registrada en el chatter.
+                        <div class="mt-2">
+                            <field name="overdraft_confirmed"/>
+                            <label for="overdraft_confirmed"/>
+                        </div>
+                    </div>
+                    <div class="alert alert-danger"
+                         role="alert"
+                         invisible="not would_overdraft or allow_overdraft">
+                        <strong>Sin saldo suficiente:</strong>
+                        La selección supera el saldo contratado en
+                        <field name="overdraft_amount"
+                               nolabel="1"
+                               readonly="1"
+                               class="oe_inline"
+                               widget="float_time"/> h
+                        y la bolsa no permite sobregiro. Reduce la selección o
+                        habilita el sobregiro en la bolsa.
+                    </div>
                 </sheet>
                 <footer>
                     <button name="action_assign" type="object"

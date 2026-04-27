@@ -43,6 +43,24 @@ class HourWalletAssignTimesheetsWizard(models.TransientModel):
         related="wallet_id.hours_available",
         readonly=True,
     )
+    allow_overdraft = fields.Boolean(
+        related="wallet_id.allow_overdraft",
+        readonly=True,
+    )
+    would_overdraft = fields.Boolean(
+        compute="_compute_overdraft_preview",
+    )
+    overdraft_amount = fields.Float(
+        string="Horas en sobregiro",
+        compute="_compute_overdraft_preview",
+        digits=(12, 2),
+    )
+    overdraft_confirmed = fields.Boolean(
+        string="Autorizo el sobregiro",
+        help="Marca esta casilla para confirmar que las horas seleccionadas "
+             "exceden el saldo contratado de la bolsa y aún así deben "
+             "asignarse. La autorización queda registrada en el chatter.",
+    )
 
     # ------------------------------------------------------------------
     # Filtros server-side
@@ -100,6 +118,30 @@ class HourWalletAssignTimesheetsWizard(models.TransientModel):
     def _compute_total_selected_hours(self):
         for wiz in self:
             wiz.total_selected_hours = sum(wiz.line_ids.mapped("unit_amount"))
+
+    @api.depends("total_selected_hours", "wallet_id")
+    def _compute_overdraft_preview(self):
+        for wiz in self:
+            if not wiz.wallet_id:
+                wiz.would_overdraft = False
+                wiz.overdraft_amount = 0.0
+                continue
+            would, amount = wiz.wallet_id._compute_overdraft_for(
+                wiz.total_selected_hours
+            )
+            wiz.would_overdraft = would
+            wiz.overdraft_amount = amount
+
+    @api.onchange("line_ids")
+    def _onchange_lines_reset_overdraft_confirmation(self):
+        """Invalida la autorización si cambia la selección.
+
+        Evita que un check antiguo cubra una selección distinta a la que
+        el usuario aprobó. La autorización vale para el set actual.
+        """
+        for wiz in self:
+            if wiz.overdraft_confirmed:
+                wiz.overdraft_confirmed = False
 
     # ==================================================================
     # DEFAULTS / ONCHANGE
@@ -235,13 +277,46 @@ class HourWalletAssignTimesheetsWizard(models.TransientModel):
                     for line in already_assigned
                 )
             )
+        # Pre-chequeo UX: si hay sobregiro y la bolsa lo permite, exigir
+        # confirmación explícita antes de delegar al check del modelo.
+        would_overdraft, overdraft_amount = self.wallet_id._compute_overdraft_for(
+            self.total_selected_hours
+        )
+        if (
+            would_overdraft
+            and self.wallet_id.allow_overdraft
+            and not self.overdraft_confirmed
+        ):
+            raise UserError(
+                _(
+                    "La asignación supera el saldo contratado en %.2f h.\n"
+                    "Marca la casilla 'Autorizo el sobregiro' para continuar."
+                )
+                % overdraft_amount
+            )
         # Validación previa de capacidad: evita asignar y luego romper límite.
+        # (Si overdraft está deshabilitado, esto sigue lanzando UserError aquí.)
         self.wallet_id._check_consumption_allowed(self.total_selected_hours)
         self.line_ids.write({"hour_wallet_id": self.wallet_id.id})
-        self.wallet_id.message_post(
-            body=_(
-                "Se vincularon %(n)d timesheets a la bolsa (%(h).2f h)."
+        if would_overdraft:
+            self.wallet_id.message_post(
+                body=_(
+                    "Asignación con sobregiro autorizada por %(user)s: "
+                    "%(n)d timesheets (%(h).2f h, %(o).2f h sobre el límite "
+                    "contratado)."
+                )
+                % {
+                    "user": self.env.user.display_name,
+                    "n": len(self.line_ids),
+                    "h": self.total_selected_hours,
+                    "o": overdraft_amount,
+                },
             )
-            % {"n": len(self.line_ids), "h": self.total_selected_hours},
-        )
+        else:
+            self.wallet_id.message_post(
+                body=_(
+                    "Se vincularon %(n)d timesheets a la bolsa (%(h).2f h)."
+                )
+                % {"n": len(self.line_ids), "h": self.total_selected_hours},
+            )
         return {"type": "ir.actions.act_window_close"}

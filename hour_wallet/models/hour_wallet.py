@@ -346,6 +346,22 @@ class HourWallet(models.Model):
         self.ensure_one()
         return self.state == "active"
 
+    def _compute_overdraft_for(self, new_hours):
+        """Calcula si añadir `new_hours` produciría sobregiro y por cuánto.
+
+        Devuelve (would_overdraft: bool, overdraft_amount: float).
+        Útil para flujos UX que necesitan avisar antes de validar
+        (ej. wizard de asignación con confirmación explícita). No
+        sustituye a `_check_consumption_allowed`, que sigue siendo
+        la red de seguridad del modelo.
+        """
+        self.ensure_one()
+        projected = self.hours_consumed + (new_hours or 0.0)
+        overflow = projected - self.hours_purchased
+        if float_compare(overflow, 0.0, precision_digits=2) > 0:
+            return True, float_round(overflow, precision_digits=2)
+        return False, 0.0
+
     def _check_consumption_allowed(self, new_hours, line=None):
         """Valida que se pueda consumir `new_hours` adicionales.
 
