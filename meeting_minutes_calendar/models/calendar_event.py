@@ -58,9 +58,12 @@ class CalendarEvent(models.Model):
                 **{SYNC_CONTEXT_KEY: True}
             ).create(self._prepare_meeting_minute_vals())
         if self.meeting_minute_id != minute:
-            self.with_context(**{SYNC_CONTEXT_KEY: True}).write(
-                {"meeting_minute_id": minute.id}
-            )
+            # `dont_notify` evita el chequeo de organizador de google_calendar:
+            # `meeting_minute_id` es un FK interno que no se sincroniza con Google,
+            # así que un asistente que no es el organizador debe poder escribirlo.
+            self.with_context(
+                **{SYNC_CONTEXT_KEY: True}, dont_notify=True
+            ).write({"meeting_minute_id": minute.id})
         return {
             "type": "ir.actions.act_window",
             "name": _("Acta de reunión"),
